@@ -127,6 +127,8 @@ fn main() {
                 println!("❌ Unknown command: '{}'", command);
                 println!("💡 Type 'help' to see available commands");
             }
-        }}
+        }
+    }
         // TODO: Print goodbye message
+        print
 }

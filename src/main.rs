@@ -127,8 +127,18 @@ fn main() {
                 println!("❌ Unknown command: '{}'", command);
                 println!("💡 Type 'help' to see available commands");
             }
+
+            "list" | "l" => {
+                if habits.is_empty(){println!("No habits yet! Use 'add <name>' to create one.")}
+                else{
+                    println!("\n Your habits:")
+                    for (i, habit) in habits.iter().enumerate(){
+                        println!("{}. {}. Current streak is {} days",i,habit.name, habit.streak)
+                    }
+                    println!();
+                }
+            }       
         }
     }
         // TODO: Print goodbye message
-        print
 }

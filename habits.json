@@ -1,14 +1,10 @@
 [
   {
-    "name": "Exercise",
+    "name": "reading",
     "streak": 2
   },
   {
-    "name": "Reading",
+    "name": "eat",
     "streak": 1
-  },
-  {
-    "name": "Meditation",
-    "streak": 0
   }
 ]

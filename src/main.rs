@@ -104,6 +104,7 @@ fn main() {
         // _ → print "Unknown command: <command>"
         match command {
             "quit" | "q" => {
+                Some(save_habits(&habits));
                 println!("👋 Goodbye!");
                 break;
             }
@@ -122,22 +123,34 @@ fn main() {
             }
             
             "" => continue,
-            
-            _ => {
-                println!("❌ Unknown command: '{}'", command);
-                println!("💡 Type 'help' to see available commands");
-            }
-
             "list" | "l" => {
                 if habits.is_empty(){println!("No habits yet! Use 'add <name>' to create one.")}
                 else{
-                    println!("\n Your habits:")
+                    println!("\n Your habits:");
                     for (i, habit) in habits.iter().enumerate(){
                         println!("{}. {}. Current streak is {} days",i,habit.name, habit.streak)
                     }
                     println!();
                 }
-            }       
+            }
+            "add" | "a" => {
+                if args.is_empty(){println!("Use add as add <habit-name>")}
+                else{
+                    let habit_name = args[0]; 
+                    if !is_valid_habit_name(&habit_name){println!("Habits should be kebab-case")}
+                    else if find_habit_by_name(habit_name, &habits).is_some() {
+                        println!("❌ Habit '{}' already exists!", habit_name);
+                    }
+                    else{
+                        habits.push(Habit::new(habit_name.to_string()));
+                        println!("Added {} to habits list", habit_name)
+                    }
+                }
+            }
+            _ => {
+                println!("❌ Unknown command: '{}'", command);
+                println!("💡 Type 'help' to see available commands");
+            }
         }
     }
         // TODO: Print goodbye message

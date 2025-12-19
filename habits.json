@@ -1,10 +1,14 @@
 [
   {
-    "name": "reading",
-    "streak": 2
+    "name": "learning-rust",
+    "streak": 1
   },
   {
-    "name": "eat",
+    "name": "coding",
     "streak": 1
+  },
+  {
+    "name": "brushing",
+    "streak": 0
   }
 ]

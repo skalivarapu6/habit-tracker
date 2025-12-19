@@ -10,5 +10,9 @@
   {
     "name": "brushing",
     "streak": 0
+  },
+  {
+    "name": "eating",
+    "streak": 1
   }
 ]

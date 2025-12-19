@@ -63,8 +63,22 @@ fn draw_ui(f: &mut ratatui::Frame, habits: &[Habit]) {
     f.render_widget(paragraph, chunks[0]);
 
     // // Section 2 - Habit list
-    let habit_list: Vec<ListItem> = habits.iter().map(|h|{
-        let text = format!("{} {}", h.name,h.streak);
+    let habit_list: Vec<ListItem> = habits.iter().map(|h| {
+        // Create progress bar based on streak
+        let max_bar_length = 10;
+        let filled = if h.streak > 0 {
+            std::cmp::min(h.streak as usize, max_bar_length)
+        } else {
+            0
+        };
+        
+        let bar = if h.streak > 0 {
+            "▓".repeat(filled) + &"░".repeat(max_bar_length - filled)
+        } else {
+            "░".repeat(max_bar_length)
+        };
+        
+        let text = format!(" {}  {}  {}", h.name, bar, h.streak);
         ListItem::new(text)
     }).collect();
     let list = List::new(habit_list);

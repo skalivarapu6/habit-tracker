@@ -1,5 +1,9 @@
 use std::io::{self, Write};
-use crate::habit::Habit;
+use ratatui::Viewport;
+use serde::forward_to_deserialize_any;
+use itertools::Itertools;
+use crate::habit::{Habit, HabitFunctions};
+use crate::stats::{StreakStats};
 use crate::storage::{save_habits, load_habits};
 use crate::validation::{is_valid_habit_name, find_habit_by_name};
 
@@ -29,10 +33,12 @@ pub fn run(){
             "help" | "h" => {
                 println!("\n📋 Available Commands:");
                 println!("  add <name>      - Add a new habit");
+                println!("  track <name> <unit> <unit_size>    - Exit\n");
                 println!("  list            - Show all habits");
                 println!("  save            - Saves progress");
                 println!("  view <name>     - Show specific habit");
                 println!("  complete <name> - Increment habit streak");
+                println!("  log <name> <quantity>    - Exit\n");
                 println!("  reset <name>    - Reset habit to 0");
                 println!("  delete <name>   - Remove habit");
                 println!("  stats           - Show statistics");
@@ -41,16 +47,52 @@ pub fn run(){
             }
             
             "" => continue,
-            "list" | "l" => {
-                if habits.is_empty(){println!("No habits yet! Use 'add <name>' to create one.")}
-                else{
-                    println!("\n Your habits:");
-                    for (i, habit) in habits.iter().enumerate(){
-                        let fire = if habit.streak > 0 { "🔥" } else { "" };
-                        println!("  {}. {} - {} days {}", i + 1, habit.name, habit.streak, fire);
-
+            "track"|"t"=>{
+                if args.len() != 3 {
+                    println!("To use: track <name> <unit> <unit_size>");
+                    continue;
+                }
+                let name = args[0].to_string();
+                let unit = args[1].to_string();
+                let unit_size: u32 = match args[2].parse() {
+                    Ok(n) => n,
+                    Err(_) => {
+                        println!("unit_size must be a number");
+                        continue;
                     }
-                    println!();
+                };
+
+                habits.push(Habit::new_quantity(name, unit, unit_size));
+                println!("📊 Quantity habit added!");
+            }
+            "log" =>{
+                if args.len()!= 2{
+                    println!("To use: log <name> <quantity> ")
+                }
+                let name: String = args[0].to_string();
+                let quantity: u32 = match args[1].parse(){
+                    Ok(n) => n,
+                    Err(_) => {
+                        println!("quantity must be a number");
+                        continue;
+                    },
+                };
+                if let Some(index) = find_habit_by_name(&name, &habits) {
+                    match habits[index].log_amount(quantity){
+                        Ok(msg) => println!("✅ {}", msg),
+                        Err(e) => println!("❌ {}", e),                   
+                    }
+                }                
+
+            }
+            "list" | "l" => {
+                if habits.is_empty() {
+                    println!("No habits yet!");
+                } else {
+                    println!("\nYour habits:");
+                    for (i, habit) in habits.iter().enumerate() {
+                        println!("  {}. {}", i + 1, habit.display_line());
+                    }
                 }
             }
             "add" | "a" => {
@@ -69,7 +111,7 @@ pub fn run(){
                         println!("❌ Habit '{}' already exists!", habit_name);
                     }
                     else{
-                        habits.push(Habit::new(habit_name.to_string()));
+                        habits.push(Habit::new_streak(habit_name.to_string()));
                         println!("Habit {} successfully added", habit_name)
                     }
                 }
@@ -88,13 +130,19 @@ pub fn run(){
                 }
                 else{
                     let habit_name = args[0];
-                    match find_habit_by_name(habit_name, &habits){
-                        Some(index) =>{
-                            habits[index].complete();
-                            let new_streak = habits[index].streak;
-                            println!("Great job! You upped your streak from {} to {}", new_streak-1, new_streak);
+                    // match find_habit_by_name(habit_name, &habits){
+                    //     Some(index) =>{
+                    //         habits[index].complete();
+                    //         let new_streak = habits[index].streak;
+                    //         println!("Great job! You upped your streak from {} to {}", new_streak-1, new_streak);
+                    //     }
+                    //     None => println!("Habit name {} not found", habit_name)
+                    // }
+                    if let Some(index) = find_habit_by_name(habit_name, &habits) {
+                        match habits[index].complete() {
+                            Ok(msg) => println!("✅ {}", msg),
+                            Err(e) => println!("❌ {}", e),
                         }
-                        None => println!("Habit name {} not found", habit_name)
                     }
                 }
             }
@@ -106,11 +154,9 @@ pub fn run(){
                 }
                 else{
                     let habit_name = args[0];
-                    match find_habit_by_name(habit_name, &habits){
-                        Some(index) =>{
-                            println!("Current {} streak is {}🔥", habits[index].name,habits[index].streak )
-                        }
-                        None => println!("Habit name {} not found", habit_name)
+                    if let Some(index) = find_habit_by_name(habit_name, &habits) {
+                        println!("{}", habits[index].display_line());
+
                     }
                 } 
             }
@@ -123,7 +169,7 @@ pub fn run(){
                 else{
                     let habit_name = args[0];
                     match find_habit_by_name(habit_name, &habits){
-                        Some(index) => {habits[index].reset();println!("Reset exercise {}", habits[index].name);}
+                        Some(index) => {habits[index].reset();println!("Reset exercise {}", habits[index].name());}
                         None => println!("Habit not {} found", habit_name)
                     }
                 }
@@ -150,39 +196,19 @@ pub fn run(){
                     }
                 }
             }
-            "stats" => {
-                if habits.is_empty() {
-                    println!("📊 No habits to show stats for!");
-                } else {
-                    let total = habits.len();
-                    
-                    let active = habits.iter()
-                        .filter(|h| h.streak > 0)
-                        .count();
-                    
-                    let longest = habits.iter()
-                        .map(|h| h.streak)
-                        .max()
-                        .unwrap_or(0);
-                    
-                    let total_days: u32 = habits.iter()
-                        .map(|h| h.streak)
-                        .sum();
-                    
-                    let average = if total > 0 {
-                        total_days as f64 / total as f64
-                    } else {
-                        0.0
-                    };
-                    
-                    println!("\n📊 Habit Statistics");
-                    println!("━━━━━━━━━━━━━━━━━━━━");
-                    println!("Total habits: {}", total);
-                    println!("Active (streak > 0): {}", active);
-                    println!("Longest streak: {} days", longest);
-                    println!("Average streak: {:.1} days\n", average);
-                }
-            }
+            // "stats" => {
+            //     if habits.is_empty() {
+            //         println!("📊 No habits to show stats for!");
+            //     } else {
+            //         let stats = StreakStats::calculate(&habits);
+            //         println!("\n📊 Habit Statistics");
+            //         println!("━━━━━━━━━━━━━━━━━━━━");
+            //         println!("Total habits: {}", stats.total);
+            //         println!("Active (streak > 0): {}", stats.active);
+            //         println!("Longest streak: {} days", stats.longest);
+            //         println!("Average streak: {:.1} days\n", stats.average);
+            //     }
+            // }
             _ => {
                 println!("❌ Unknown command: '{}'", command);
                 println!("💡 Type 'help' to see available commands");

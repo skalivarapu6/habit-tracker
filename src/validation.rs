@@ -1,4 +1,4 @@
-use crate::habit::Habit;
+use crate::habit::{Habit, HabitFunctions};
 
 pub fn is_valid_habit_name(name: &str) -> bool{
     if name.is_empty() {
@@ -14,5 +14,5 @@ pub fn is_valid_habit_name(name: &str) -> bool{
 }
 
 pub fn find_habit_by_name(name: &str, habits: &[Habit]) -> Option<usize>{
-    habits.iter().position(|e|e.name == name)
+    habits.iter().position(|e|e.name() == name)
 }

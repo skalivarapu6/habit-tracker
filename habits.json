@@ -1,18 +1,29 @@
 [
   {
-    "name": "learning-rust",
-    "streak": 1
+    "Streak": {
+      "name": "coding",
+      "streak": 1,
+      "last_completed": "2025-12-23"
+    }
   },
   {
-    "name": "coding",
-    "streak": 1
-  },
-  {
-    "name": "brushing",
-    "streak": 0
-  },
-  {
-    "name": "eating",
-    "streak": 1
+    "Quantity": {
+      "name": "water",
+      "unit": "ml",
+      "unit_size": 500,
+      "today_total": 3000,
+      "today_date": "2025-12-23",
+      "today_history": [
+        {
+          "hour": 3,
+          "value": 500
+        },
+        {
+          "hour": 3,
+          "value": 2500
+        }
+      ],
+      "history": []
+    }
   }
 ]

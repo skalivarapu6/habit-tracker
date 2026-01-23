@@ -33,12 +33,12 @@ pub fn run(){
             "help" | "h" => {
                 println!("\n📋 Available Commands:");
                 println!("  add <name>      - Add a new habit");
-                println!("  track <name> <unit> <unit_size>    - Exit\n");
+                println!("  track <name> <unit> <unit_size>    - Add a new metric to track\n");
                 println!("  list            - Show all habits");
                 println!("  save            - Saves progress");
                 println!("  view <name>     - Show specific habit");
                 println!("  complete <name> - Increment habit streak");
-                println!("  log <name> <quantity>    - Exit\n");
+                println!("  log <name> <quantity>    - Log quantity\n");
                 println!("  reset <name>    - Reset habit to 0");
                 println!("  delete <name>   - Remove habit");
                 println!("  stats           - Show statistics");

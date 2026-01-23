@@ -9,7 +9,7 @@ pub struct StreakHabit{
     pub streak: u32,
     pub last_completed: Option<NaiveDate>, 
 }
-
+ 
 impl StreakHabit{
     pub fn new(name: String)-> Self{
         StreakHabit { name, streak: 0, last_completed: None }

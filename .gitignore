@@ -1,1 +1,4 @@
 /target
+.DS_Store
+habits.json
+src/habits.json
